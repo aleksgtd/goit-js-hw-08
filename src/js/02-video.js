@@ -2,15 +2,11 @@ import throttle from 'lodash.throttle';
 const iframe = document.querySelector('iframe');
 const player = new Vimeo.Player(iframe);
 
-// onLoadFn();
-
 const SET_TIME_KEY = 'videoplayer-current-time';
 
 const time = localStorage[SET_TIME_KEY];
 
 player.on('timeupdate', throttle(getTime, 1000));
-
-// const timeToSet = localeStorage.getTime(SET_TIME_KEY);
 
 function getTime({ seconds }) {
   localStorage.setItem(SET_TIME_KEY, seconds);
@@ -25,10 +21,12 @@ player
     switch (error.name) {
       case 'RangeError':
         // the time was less than 0 or greater than the video’s duration
+        console.log('RangeError!');
         break;
 
       default:
         // some other error occurred
+        console.log('Some error!');
         break;
     }
   });
