@@ -25,10 +25,17 @@ onPageLoading();
 form.addEventListener('input', _.throttle(onInputFn, 500));
 form.addEventListener('submit', onSubmit);
 
-const dataObj = {};
-
 function onInputFn(event) {
-  dataObj[event.target.name] = event.target.value;
+  const dataObj = {};
+  if (localStorage.getItem(STORAGE_KEY)) {
+    const dataObjUnempty = JSON.parse(localStorage.getItem(STORAGE_KEY));
+    const key = event.target.name;
+    dataObjUnempty[key] = event.target.value;
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(dataObjUnempty));
+    return;
+  }
+  const key = event.target.name;
+  dataObj[key] = event.target.value;
   localStorage.setItem(STORAGE_KEY, JSON.stringify(dataObj));
 }
 
@@ -45,8 +52,16 @@ function onPageLoading() {
 }
 
 function onSubmit(event) {
-  event.preventDefault();
-  event.currentTarget.reset();
-  console.log(JSON.parse(localStorage.getItem(STORAGE_KEY)));
-  localStorage.removeItem(STORAGE_KEY);
+  if (
+    JSON.parse(localStorage.getItem(STORAGE_KEY))['email'] &&
+    JSON.parse(localStorage.getItem(STORAGE_KEY))['message']
+  ) {
+    event.preventDefault();
+    event.currentTarget.reset();
+    console.log(JSON.parse(localStorage.getItem(STORAGE_KEY)));
+    localStorage.removeItem(STORAGE_KEY);
+    return;
+  }
+
+  alert('Необходимо заполнить все поля формы!');
 }
