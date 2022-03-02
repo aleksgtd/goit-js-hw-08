@@ -13,55 +13,43 @@
 //     чтобы хранилище обновлялось не чаще чем раз в 500 миллисекунд.
 //     Для этого добавь в проект и используй библиотеку lodash.throttle.
 
-import _ from 'lodash';
-const email = document.querySelector('input[name="email"]');
-const message = document.querySelector('textarea[name="message"]');
+import throttle from 'lodash.throttle';
 const form = document.querySelector('form.feedback-form');
+
+const email = form.elements.email;
+const message = form.elements.message;
 
 const STORAGE_KEY = 'feedback-form-state';
 
 onPageLoading();
 
-form.addEventListener('input', _.throttle(onInputFn, 500));
+form.addEventListener('input', throttle(onInputFn, 500));
 form.addEventListener('submit', onSubmit);
 
-function onInputFn(event) {
-  const dataObj = {};
-  if (localStorage.getItem(STORAGE_KEY)) {
-    const dataObjUnempty = JSON.parse(localStorage.getItem(STORAGE_KEY));
-    const key = event.target.name;
-    dataObjUnempty[key] = event.target.value;
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(dataObjUnempty));
-    return;
-  }
-  const key = event.target.name;
-  dataObj[key] = event.target.value;
-  localStorage.setItem(STORAGE_KEY, JSON.stringify(dataObj));
+function onInputFn() {
+  const formData = {
+    email: email.value,
+    message: message.value,
+  };
+
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(formData));
 }
 
 function onPageLoading() {
-  if (localStorage[STORAGE_KEY]) {
-    const localStorageData = JSON.parse(localStorage.getItem(STORAGE_KEY));
-    if (localStorageData['email']) {
-      email.value = JSON.parse(localStorage.getItem(STORAGE_KEY))['email'];
-    }
-    if (localStorageData['message']) {
-      message.value = JSON.parse(localStorage.getItem(STORAGE_KEY))['message'];
-    }
-  }
+  const parsedData = JSON.parse(localStorage.getItem(STORAGE_KEY));
+
+  if (!parsedData) return;
+
+  email.value = parsedData.email;
+  message.value = parsedData.message;
 }
 
-function onSubmit(event) {
-  if (
-    JSON.parse(localStorage.getItem(STORAGE_KEY))['email'] &&
-    JSON.parse(localStorage.getItem(STORAGE_KEY))['message']
-  ) {
-    event.preventDefault();
-    event.currentTarget.reset();
-    console.log(JSON.parse(localStorage.getItem(STORAGE_KEY)));
-    localStorage.removeItem(STORAGE_KEY);
-    return;
+function onSubmit(e) {
+  e.preventDefault();
+  if (!email.value || !message.value) {
+    return alert('Внимание! Необходимо заполнить все поля формы!');
   }
-
-  alert('Необходимо заполнить все поля формы!');
+  console.log({ email: email.value, message: message.value });
+  form.reset();
+  localStorage.removeItem(STORAGE_KEY);
 }
